@@ -1,0 +1,103 @@
+local LABEL_TEMPLO = "templo"
+local LABEL_HUNT   = "hunt"
+
+local ANTECEDENCIA_MIN = 3
+local SEGURAR_DEPOIS_MIN = 5
+local clockOffsetMinutes = 0
+local RESPEITAR_EVENTOS_OFF = true
+local USAR_EVENTOS = true
+local USAR_CLICKUP = true
+
+local estado = (type(storage) == "table") and storage.eventosPro or nil
+local labelSaida = LABEL_TEMPLO
+local pedidoDungeon = false
+
+if estado then
+  local saidaConfig = tostring(estado.dungeonCheckSaidaLabel or ""):gsub("^%s+", ""):gsub("%s+$", "")
+  if saidaConfig ~= "" then labelSaida = saidaConfig end
+
+  if estado.dungeonCheckEnabled == true
+      and (estado.dungeonCheckAlerta == true or estado.dungeonCheckIndoSaida == true) then
+    pedidoDungeon = true
+  end
+end
+
+if pedidoDungeon then
+  estado.dungeonCheckPedidoSaida = true
+  CaveBot.gotoLabel(labelSaida)
+  print("[WAYPOINT] Dungeon liberada -> indo para '" .. labelSaida .. "'.")
+  return true
+end
+
+WAYPOINT_SAIDA = WAYPOINT_SAIDA or {}
+local memoria = WAYPOINT_SAIDA
+
+local agora = os.time() + (clockOffsetMinutes * 60)
+local hora = os.date("*t", agora)
+local segundoAtual = hora.hour * 3600 + hora.min * 60 + hora.sec
+
+local antecedencia = math.max(0, math.floor(ANTECEDENCIA_MIN)) * 60
+local segurar = math.max(0, math.floor(SEGURAR_DEPOIS_MIN)) * 60
+
+local function distanciaDaJanela(falta)
+  if falta <= antecedencia then return antecedencia - falta end
+  if falta >= 86400 - segurar then return falta - (86400 - segurar) end
+  return nil
+end
+
+local sair = false
+local horarioEscolhido = nil
+local melhorDistancia = nil
+local horariosLidos = 0
+
+if estado and type(estado.entries) == "table"
+    and not (RESPEITAR_EVENTOS_OFF and estado.enabled ~= true) then
+  for _, entrada in ipairs(estado.entries) do
+    if type(entrada) == "table" then
+      local tipo = tostring(entrada.tipo or "evento"):lower()
+      local usar = (tipo == "clickup" and USAR_CLICKUP) or (tipo ~= "clickup" and USAR_EVENTOS)
+      if usar then
+        local hh, mm = tostring(entrada.start or ""):match("^(%d%d?):(%d%d)$")
+        hh, mm = tonumber(hh), tonumber(mm)
+        if hh and mm and hh <= 23 and mm <= 59 then
+          horariosLidos = horariosLidos + 1
+          local alvo = hh * 3600 + mm * 60
+          local falta
+          if alvo >= segundoAtual then
+            falta = alvo - segundoAtual
+          else
+            falta = alvo + 86400 - segundoAtual
+          end
+          local distancia = distanciaDaJanela(falta)
+          if distancia and (not melhorDistancia or distancia < melhorDistancia) then
+            melhorDistancia = distancia
+            horarioEscolhido = string.format("%02d:%02d", hh, mm)
+            sair = true
+          end
+        end
+      end
+    end
+  end
+end
+
+if sair then
+  CaveBot.gotoLabel(labelSaida)
+  if memoria.ultimoLog ~= "sair|" .. tostring(horarioEscolhido) then
+    memoria.ultimoLog = "sair|" .. tostring(horarioEscolhido)
+    print("[WAYPOINT] Horario " .. tostring(horarioEscolhido) ..
+          " do fullup: saindo " .. tostring(ANTECEDENCIA_MIN) .. " min antes -> '" .. labelSaida .. "'.")
+  end
+else
+  CaveBot.gotoLabel(LABEL_HUNT)
+  if memoria.ultimoLog ~= "hunt" then
+    memoria.ultimoLog = "hunt"
+    if horariosLidos == 0 then
+      print("[WAYPOINT] Nenhum horario lido do fullup; seguindo na '" .. LABEL_HUNT .. "'.")
+    else
+      print("[WAYPOINT] Fora da janela de saida (" .. tostring(horariosLidos) ..
+            " horarios lidos); seguindo na '" .. LABEL_HUNT .. "'.")
+    end
+  end
+end
+
+return true

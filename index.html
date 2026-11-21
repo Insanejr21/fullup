@@ -4,160 +4,515 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
-<title>Function do CaveBot - FullUp</title>
+<meta name="description" content="FullUp — Function do CaveBot (Lua) que sai do hunt 3 minutos antes dos horários do fullup. Código aberto, servido pelo GitHub Pages, pronto para copiar e colar no seu waypoint.">
+<meta name="theme-color" content="#0b0f14">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="FullUp">
+<meta property="og:title" content="FullUp — Function do CaveBot">
+<meta property="og:description" content="Sai do hunt 3 minutos antes dos horários do fullup. Lua pronto para copiar, publicado no GitHub Pages.">
+<meta property="og:url" content="https://insanejr21.github.io/fullup/">
+<meta name="twitter:card" content="summary">
+<link rel="canonical" href="https://insanejr21.github.io/fullup/">
+<link rel="alternate" type="text/plain" href="function.txt" title="function.txt (fonte Lua)">
+<title>FullUp — Function do CaveBot</title>
 <style>
   :root{
-    --bg:#0d1014;
-    --card:#151a21;
-    --card2:#0a0d11;
-    --linha:#242c36;
-    --texto:#e6edf3;
-    --fraco:#8b98a5;
-    --verde:#3ddc84;
-    --azul:#22d3ee;
-    --vermelho:#ff5555;
+    --bg:#0b0f14;
+    --panel:#121822;
+    --panel2:#0a0e13;
+    --panel3:#161e29;
+    --line:#22303f;
+    --line2:#2d3f52;
+    --text:#e8eef4;
+    --dim:#8296a8;
+    --green:#3ddc84;
+    --cyan:#22d3ee;
+    --amber:#ffd166;
+    --red:#ff6b6b;
+    --mono:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Inter,sans-serif;
+    --radius:14px;
   }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
   body{
-    background:radial-gradient(1200px 600px at 50% -10%, #16202b 0%, var(--bg) 60%);
-    color:var(--texto);
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
     min-height:100vh;
-    padding:18px 14px 40px;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:900px;margin:0 auto}
-  header{margin-bottom:14px}
+  ::selection{background:#1e5c3a;color:#eafff3}
+  :focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+
+  /* ===== fundo ===== */
+  .bg{position:fixed;inset:0;z-index:-1;pointer-events:none}
+  .bg::before{
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(900px 500px at 15% -10%, rgba(34,211,238,.10), transparent 60%),
+      radial-gradient(900px 600px at 85% -10%, rgba(61,220,132,.12), transparent 60%),
+      radial-gradient(700px 700px at 50% 120%, rgba(61,220,132,.06), transparent 60%);
+  }
+  .bg::after{
+    content:"";position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(130,150,168,.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(130,150,168,.055) 1px, transparent 1px);
+    background-size:44px 44px;
+    mask-image:radial-gradient(ellipse 90% 60% at 50% 0%, black 30%, transparent 75%);
+    -webkit-mask-image:radial-gradient(ellipse 90% 60% at 50% 0%, black 30%, transparent 75%);
+  }
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+
+  /* ===== nav ===== */
+  nav{
+    display:flex;align-items:center;gap:14px;
+    padding:18px 0;border-bottom:1px solid rgba(34,48,63,.6);
+  }
+  .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
+  .logo svg{display:block}
+  .logo b{font-size:15px;letter-spacing:2.5px;font-weight:800}
+  .logo b i{font-style:normal;color:var(--green)}
+  .nav-links{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .nav-link{
+    font-family:var(--mono);font-size:12px;color:var(--dim);text-decoration:none;
+    padding:9px 12px;border-radius:9px;border:1px solid transparent;transition:.2s;
+  }
+  .nav-link:hover{color:var(--text);background:var(--panel)}
+  .gh-btn{
+    display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+    font-size:12.5px;font-weight:700;color:#06130c;background:var(--green);
+    border:none;padding:10px 16px;border-radius:9px;letter-spacing:.3px;transition:.2s;
+  }
+  .gh-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+
+  /* ===== hero ===== */
+  .hero{padding:56px 0 34px;text-align:center}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:10px;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:2px;color:var(--cyan);
+    border:1px solid rgba(34,211,238,.3);background:rgba(34,211,238,.06);
+    padding:7px 16px;border-radius:999px;margin-bottom:22px;text-transform:uppercase;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
   h1{
-    font-size:19px;margin:0 0 4px;letter-spacing:.2px;
-    display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+    font-size:clamp(34px,5.6vw,58px);line-height:1.08;font-weight:800;letter-spacing:-1px;
   }
-  h1 .tag{
-    font-size:10px;font-weight:700;letter-spacing:1px;
-    color:#08130c;background:var(--verde);
-    padding:3px 7px;border-radius:999px;
+  h1 .grad{
+    background:linear-gradient(100deg,var(--green) 0%,#7ef0b2 35%,var(--cyan) 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   }
-  .sub{color:var(--fraco);font-size:13px;margin:0;line-height:1.5}
-  .sub code{color:var(--azul);background:#0a0d11;padding:1px 5px;border-radius:4px;font-size:12px}
+  .sub{
+    margin:18px auto 0;max-width:560px;color:var(--dim);
+    font-size:16px;line-height:1.65;
+  }
+  .sub code{font-family:var(--mono);font-size:13px;color:var(--cyan);background:var(--panel2);border:1px solid var(--line);padding:1px 6px;border-radius:5px}
+  .cta-row{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+  .btn{
+    font-family:inherit;font-size:13px;font-weight:800;letter-spacing:.6px;cursor:pointer;
+    border-radius:10px;padding:14px 24px;border:1px solid transparent;
+    display:inline-flex;align-items:center;gap:9px;transition:.18s;text-decoration:none;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--green);color:#06130c;min-width:190px;justify-content:center}
+  .btn-primary:hover{filter:brightness(1.1)}
+  .btn-primary.ok{background:#1f9e5c;color:#eafff3}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--line2)}
+  .btn-ghost:hover{background:var(--panel)}
+  .meta-row{
+    margin-top:22px;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;
+    font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.5px;
+  }
+  .meta-row span{display:inline-flex;align-items:center;gap:7px}
+  .meta-row i{width:5px;height:5px;border-radius:50%;background:var(--line2);display:inline-block}
 
-  .barra{
-    display:flex;align-items:center;gap:9px;flex-wrap:wrap;
-    margin:16px 0 10px;
+  /* ===== layout principal ===== */
+  .grid{
+    display:grid;grid-template-columns:minmax(280px,5fr) minmax(0,7fr);
+    gap:26px;padding:26px 0 40px;align-items:start;
   }
-  button{
-    font-family:inherit;font-size:13px;font-weight:700;letter-spacing:.4px;
-    border:1px solid transparent;border-radius:9px;padding:11px 18px;
-    cursor:pointer;transition:transform .06s ease, filter .15s ease, background .15s ease;
-    display:inline-flex;align-items:center;gap:8px;
-  }
-  button:active{transform:translateY(1px)}
-  #copiar{background:var(--verde);color:#06210f;min-width:150px;justify-content:center}
-  #copiar:hover{filter:brightness(1.08)}
-  #copiar.ok{background:#1f9e5c;color:#eafff3}
-  #copiar:disabled{background:#2a3340;color:#6f7d8b;cursor:not-allowed}
-  .ghost{
-    background:transparent;color:var(--texto);border-color:var(--linha);
-  }
-  .ghost:hover{background:#1b232c}
-  .ghost:disabled{color:#5c6773;cursor:not-allowed}
-  .espaco{flex:1}
+  @media (max-width:980px){.grid{grid-template-columns:1fr}}
 
-  .mini{
-    display:flex;align-items:center;gap:8px;color:var(--fraco);
-    font-size:12px;user-select:none;cursor:pointer;
+  .panel{
+    background:linear-gradient(180deg,var(--panel) 0%, var(--panel2) 100%);
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:24px 24px 22px;
   }
-  .mini input{accent-color:var(--verde);width:15px;height:15px;cursor:pointer}
+  .panel + .panel{margin-top:20px}
+  .panel h2{
+    font-family:var(--mono);font-size:11px;letter-spacing:2.2px;text-transform:uppercase;
+    color:var(--dim);margin-bottom:16px;display:flex;align-items:center;gap:10px;
+  }
+  .panel h2::after{content:"";flex:1;height:1px;background:var(--line)}
 
-  #status{font-size:12px;color:var(--fraco);min-height:16px}
-  #status.erro{color:var(--vermelho)}
-  #status.ok{color:var(--verde)}
+  .step{display:flex;gap:14px;padding:12px 0;border-bottom:1px dashed var(--line)}
+  .step:last-of-type{border-bottom:none}
+  .step-num{
+    font-family:var(--mono);font-size:11px;font-weight:700;color:var(--green);
+    border:1px solid rgba(61,220,132,.35);border-radius:8px;
+    width:34px;height:34px;flex:0 0 34px;display:flex;align-items:center;justify-content:center;
+    background:rgba(61,220,132,.06);
+  }
+  .step p{font-size:13.5px;line-height:1.6;color:#c6d3de}
+  .step p b{color:var(--text)}
+  .step code{font-family:var(--mono);font-size:11.5px;color:var(--cyan)}
 
-  .caixa{
-    background:var(--card2);
-    border:1px solid var(--linha);
-    border-radius:12px;
-    overflow:hidden;
-    box-shadow:0 10px 30px rgba(0,0,0,.35);
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    font-family:var(--mono);font-size:10.5px;color:#a8e6c5;
+    background:rgba(61,220,132,.07);border:1px solid rgba(61,220,132,.25);
+    padding:6px 11px;border-radius:7px;letter-spacing:.3px;
   }
-  .caixa .topo{
-    display:flex;align-items:center;gap:8px;
-    padding:9px 12px;background:var(--card);
-    border-bottom:1px solid var(--linha);
-    font-size:11.5px;color:var(--fraco);letter-spacing:.3px;
+  .chip.warn{color:#ffd9a0;background:rgba(255,209,102,.06);border-color:rgba(255,209,102,.3)}
+
+  .update-box{
+    display:flex;gap:12px;align-items:flex-start;
+    background:var(--panel3);border:1px solid var(--line2);border-radius:12px;padding:14px 15px;
   }
-  .bolinha{width:9px;height:9px;border-radius:50%;background:#ff5f56}
-  .bolinha:nth-child(2){background:#ffbd2e}
-  .bolinha:nth-child(3){background:#27c93f}
-  .arquivo{color:var(--azul);font-family:ui-monospace,Consolas,Menlo,monospace}
-  #caixa{
-    margin:0;padding:14px 15px;
-    font-family:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;
-    font-size:12.5px;line-height:1.55;
-    color:#cfe3f5;
-    white-space:pre;
-    overflow:auto;
-    max-height:62vh;
-    tab-size:2;
-    outline:none;
+  .update-box svg{flex:0 0 auto;margin-top:2px}
+  .update-box p{font-size:12.5px;color:#b9c7d3;line-height:1.6}
+  .update-box code{font-family:var(--mono);font-size:11px;color:var(--amber);background:#0a0e13;padding:1px 5px;border-radius:4px}
+
+  /* ===== terminal ===== */
+  .terminal{
+    background:var(--panel2);border:1px solid var(--line2);border-radius:var(--radius);
+    overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(61,220,132,.04) inset, 0 0 80px rgba(61,220,132,.05);
+    position:sticky;top:20px;
   }
-  #caixa.quebra{white-space:pre-wrap;word-break:break-word}
-  #caixa::selection,#caixa *::selection{background:#25476b;color:#fff}
-  #caixa.aviso{
-    color:var(--fraco);white-space:pre-wrap;
-    font-family:system-ui,sans-serif;font-size:13.5px;line-height:1.65;
+  @media (max-width:980px){.terminal{position:static}}
+  .t-head{
+    display:flex;align-items:center;gap:12px;padding:11px 14px;
+    background:linear-gradient(180deg,#151d27,#11161e);border-bottom:1px solid var(--line);
   }
+  .dots{display:flex;gap:6px}
+  .dotc{width:11px;height:11px;border-radius:50%}
+  .dotc.r{background:#ff5f56}.dotc.y{background:#ffbd2e}.dotc.g{background:#27c93f}
+  .tab{
+    display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11.5px;
+    color:var(--cyan);background:#0a0e13;border:1px solid var(--line);border-bottom:none;
+    padding:6px 14px;border-radius:8px 8px 0 0;margin-bottom:-12px;align-self:flex-end;
+  }
+  .t-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .icon-btn{
+    background:transparent;border:1px solid var(--line2);color:var(--dim);
+    width:32px;height:32px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;
+  }
+  .icon-btn:hover{color:var(--text);background:#1b2430;border-color:#3a4c5f}
+
+  .t-toolbar{display:flex;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .mini-btn{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.8px;font-weight:700;cursor:pointer;
+    background:transparent;color:var(--text);border:1px solid var(--line2);
+    border-radius:8px;padding:8px 13px;display:inline-flex;align-items:center;gap:7px;transition:.15s;
+  }
+  .mini-btn:hover{background:#1b2430}
+  .mini-btn:disabled{color:#55636f;cursor:not-allowed}
+  .toggle{display:flex;align-items:center;gap:8px;color:var(--dim);font-size:11.5px;cursor:pointer;user-select:none;font-family:var(--mono)}
+  .toggle input{accent-color:var(--green);width:14px;height:14px;cursor:pointer}
+  .t-status{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .t-status.ok{color:var(--green)} .t-status.erro{color:var(--red)}
+
+  .code-scroll{overflow:auto;max-height:60vh;background:
+      linear-gradient(180deg, rgba(61,220,132,.02), transparent 40%)}
+  .code{
+    font-family:var(--mono);font-size:12.5px;line-height:1.62;
+    padding:14px 0 16px;min-width:max-content;
+  }
+  .cl{display:flex}
+  .cl:hover{background:rgba(34,211,238,.045)}
+  .cl .n{
+    flex:0 0 46px;text-align:right;padding-right:16px;color:#3d4c5c;user-select:none;
+    font-size:11px;line-height:1.75;
+  }
+  .cl .c{white-space:pre;padding-right:28px;color:#cfe3f5}
+  .code.quebra .c{white-space:pre-wrap;word-break:break-word}
+  .tk-k{color:#22d3ee;font-weight:700}
+  .tk-s{color:#a5e075}
+  .tk-c{color:#5d7183;font-style:italic}
+  .tk-n{color:#ffd166}
+  .tk-b{color:#f2a5c0}
+  .tk-g{color:#7ef0b2}
+
+  .t-foot{
+    display:flex;align-items:center;gap:14px;padding:8px 14px;
+    background:#0d1420;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.4px;
+  }
+  .t-foot .live{display:flex;align-items:center;gap:6px;color:var(--green)}
+  .t-foot .live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+  .t-foot .right{margin-left:auto}
+  .t-foot a{color:var(--cyan);text-decoration:none}
+  .t-foot a:hover{text-decoration:underline}
+
+  /* ===== footer ===== */
   footer{
-    margin-top:14px;font-size:12px;color:#6f7d8b;line-height:1.6;
+    border-top:1px solid rgba(34,48,63,.6);
+    padding:22px 0 34px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    font-size:12px;color:#66788a;
   }
-  footer b{color:var(--fraco)}
-  @media (max-width:560px){
-    .barra{gap:8px}
-    #copiar{flex:1;min-width:0}
-    .ghost{padding:11px 13px}
-    #caixa{font-size:11.5px;max-height:56vh}
+  footer a{color:var(--dim);text-decoration:none}
+  footer a:hover{color:var(--text)}
+  footer b{color:var(--dim)}
+
+  @media (max-width:600px){
+    .cta-row .btn{width:100%;justify-content:center}
+    .t-toolbar{gap:8px}
+    .hero{padding-top:38px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
   }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="bg"></div>
 
-  <header>
-    <h1>Function do CaveBot <span class="tag">FULLUP</span></h1>
-    <p class="sub">
-      Sai <b>3 minutos antes</b> dos horários cadastrados no fullup.
-      Lê direto de <code>function.txt</code> — edite o arquivo e clique em ATUALIZAR.
-    </p>
-  </header>
+<nav class="wrap">
+  <a class="logo" href="./" aria-label="FullUp — início">
+    <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="29" height="29" rx="8" stroke="#3ddc84" stroke-width="2" fill="#0d1420"/>
+      <path d="M10 20.5V11.5l6 5 6-5v9" stroke="#3ddc84" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <b>FULL<i>UP</i></b>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="function.txt">function.txt</a>
+    <a class="gh-btn" href="https://github.com/Insanejr21/fullup" target="_blank" rel="noopener">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 5.78 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.73.81 1.18 1.83 1.18 3.09 0 4.41-2.7 5.38-5.26 5.66.41.35.77 1.05.77 2.12 0 1.53-.01 2.76-.01 3.14 0 .3.21.66.8.55A10.52 10.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
 
-  <div class="barra">
-    <button id="copiar" disabled>
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
-      <span id="rotuloCopiar">COPIAR</span>
+<header class="hero wrap">
+  <span class="eyebrow"><span class="dot"></span> GitHub Pages &nbsp;·&nbsp; CaveBot &nbsp;·&nbsp; Lua</span>
+  <h1>A function do CaveBot,<br><span class="grad">num clique de distância.</span></h1>
+  <p class="sub">
+    Sai do <b>hunt</b> <b>3 minutos antes</b> dos horários cadastrados no fullup
+    e segura no <code>templo</code>. Lê os horários direto de <code>storage.eventosPro</code> —
+    cole no seu waypoint e pronto.
+  </p>
+  <div class="cta-row">
+    <button id="copiarHero" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+      <span id="rotuloHero">COPIAR FUNÇÃO</span>
     </button>
-    <button id="atualizar" class="ghost">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
-      ATUALIZAR
-    </button>
-    <label class="mini"><input type="checkbox" id="quebra"> quebrar linha</label>
-    <span class="espaco"></span>
-    <span id="status"></span>
+    <a class="btn btn-ghost" href="#como-funciona">Ver como funciona</a>
+  </div>
+  <div class="meta-row">
+    <span><i></i><b id="mLinhas">—</b>&nbsp;linhas de Lua</span>
+    <span><i></i><b id="mBytes">—</b></span>
+    <span><i></i>código aberto · copy-paste ready</span>
+  </div>
+</header>
+
+<main class="wrap grid" id="como-funciona">
+
+  <!-- coluna esquerda -->
+  <div>
+    <section class="panel" aria-labelledby="t1">
+      <h2 id="t1">Como funciona</h2>
+      <div class="step">
+        <div class="step-num">01</div>
+        <p><b>Lê os horários do fullup.</b> Percorre <code>storage.eventosPro.entries</code> e aceita tanto eventos quanto tarefas do ClickUp (<code>tipo == "clickup"</code>).</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <p><b>Sai na hora certa.</b> Com <code>ANTECEDENCIA_MIN = 3</code>, o bot vai para o <code>templo</code> 3 min antes do horário e segura lá por <code>SEGURAR_DEPOIS_MIN = 5</code> min depois.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <p><b>Dungeon tem prioridade.</b> Se o <code>dungeonCheck</code> está ativado com alerta ou indo pra saída, a function libera a dungeon e vai direto para o label de saída.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <p><b>Fora da janela, caça.</b> Sem horário próximo no horizonte de 24h, ela despacha para o label <code>hunt</code> — e não spamma o chat: loga só na mudança de estado.</p>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="t2">
+      <h2 id="t2">Parâmetros</h2>
+      <div class="chips">
+        <span class="chip">ANTECEDENCIA_MIN = 3</span>
+        <span class="chip">SEGURAR_DEPOIS_MIN = 5</span>
+        <span class="chip">USAR_EVENTOS = true</span>
+        <span class="chip">USAR_CLICKUP = true</span>
+        <span class="chip warn">RESPEITAR_EVENTOS_OFF = true</span>
+        <span class="chip">LABEL_TEMPLO = "templo"</span>
+        <span class="chip">LABEL_HUNT = "hunt"</span>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="t3">
+      <h2 id="t3">Atualize sem medo</h2>
+      <div class="update-box">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffd166" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/><path d="M12 3V1.5M12 22.5V21"/></svg>
+        <p>Edite só o <code>function.txt</code> no repositório e dê commit — o GitHub Pages republica sozinho em ~1 minuto.
+        Na página, clique em <b>ATUALIZAR</b> para buscar a versão mais nova, sem hard refresh.</p>
+      </div>
+    </section>
   </div>
 
-  <div class="caixa">
-    <div class="topo">
-      <span class="bolinha"></span><span class="bolinha"></span><span class="bolinha"></span>
-      <span class="arquivo" id="nomeArquivo">function.txt</span>
-      <span id="info" style="margin-left:auto"></span>
+  <!-- coluna direita: terminal -->
+  <section class="terminal" aria-label="Código fonte de function.txt">
+    <div class="t-head">
+      <div class="dots" aria-hidden="true"><span class="dotc r"></span><span class="dotc y"></span><span class="dotc g"></span></div>
+      <div class="tab">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        function.txt
+      </div>
+      <div class="t-actions">
+        <button class="icon-btn" id="btnDownload" title="Baixar function.txt" aria-label="Baixar function.txt">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <a class="icon-btn" id="btnRaw" href="https://raw.githubusercontent.com/Insanejr21/fullup/main/function.txt" target="_blank" rel="noopener" title="Ver raw no GitHub" aria-label="Ver raw no GitHub">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </a>
+      </div>
     </div>
-    <pre id="caixa" class="aviso" tabindex="0">Carregando function.txt...</pre>
-  </div>
 
-  <footer>
-    <b>Como usar:</b> clique em COPIAR, abra o editor de waypoints do CaveBot, apague a função velha e cole.<br>
-    Para editar depois, mexa só no <b>function.txt</b> — o HTML não precisa ser tocado.
-  </footer>
+    <div class="t-toolbar">
+      <button class="mini-btn" id="copiar">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        <span id="rotuloCopiar">COPIAR</span>
+      </button>
+      <button class="mini-btn" id="atualizar">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+        ATUALIZAR
+      </button>
+      <label class="toggle"><input type="checkbox" id="quebra"> quebrar linha</label>
+      <span class="t-status" id="status" role="status" aria-live="polite"></span>
+    </div>
 
-</div>
+    <div class="code-scroll">
+      <div class="code" id="code" tabindex="0" aria-label="Conteúdo de function.txt">Carregando function.txt…</div>
+    </div>
+
+    <div class="t-foot">
+      <span class="live">lua 5 · cavebot</span>
+      <span id="info">—</span>
+      <span class="right">UTF-8 · LF · <a href="https://github.com/Insanejr21/fullup/blob/main/function.txt" target="_blank" rel="noopener">editar no GitHub ↗</a></span>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <span><b>FULLUP</b> — function do CaveBot · publicado com <b>GitHub Pages</b></span>
+  <span><a href="https://github.com/Insanejr21/fullup" target="_blank" rel="noopener">Insanejr21/fullup</a> · <a href="function.txt">function.txt</a> · 2026</span>
+</footer>
+
+<!-- fallback embutido: usado se o fetch(function.txt) falhar (ex.: aberto via file://) -->
+<script id="fallback-src" type="text/plain">
+local LABEL_TEMPLO = "templo"
+local LABEL_HUNT   = "hunt"
+
+local ANTECEDENCIA_MIN = 3
+local SEGURAR_DEPOIS_MIN = 5
+local clockOffsetMinutes = 0
+local RESPEITAR_EVENTOS_OFF = true
+local USAR_EVENTOS = true
+local USAR_CLICKUP = true
+
+local estado = (type(storage) == "table") and storage.eventosPro or nil
+local labelSaida = LABEL_TEMPLO
+local pedidoDungeon = false
+
+if estado then
+  local saidaConfig = tostring(estado.dungeonCheckSaidaLabel or ""):gsub("^%s+", ""):gsub("%s+$", "")
+  if saidaConfig ~= "" then labelSaida = saidaConfig end
+
+  if estado.dungeonCheckEnabled == true
+      and (estado.dungeonCheckAlerta == true or estado.dungeonCheckIndoSaida == true) then
+    pedidoDungeon = true
+  end
+end
+
+if pedidoDungeon then
+  estado.dungeonCheckPedidoSaida = true
+  CaveBot.gotoLabel(labelSaida)
+  print("[WAYPOINT] Dungeon liberada -> indo para '" .. labelSaida .. "'.")
+  return true
+end
+
+WAYPOINT_SAIDA = WAYPOINT_SAIDA or {}
+local memoria = WAYPOINT_SAIDA
+
+local agora = os.time() + (clockOffsetMinutes * 60)
+local hora = os.date("*t", agora)
+local segundoAtual = hora.hour * 3600 + hora.min * 60 + hora.sec
+
+local antecedencia = math.max(0, math.floor(ANTECEDENCIA_MIN)) * 60
+local segurar = math.max(0, math.floor(SEGURAR_DEPOIS_MIN)) * 60
+
+local function distanciaDaJanela(falta)
+  if falta <= antecedencia then return antecedencia - falta end
+  if falta >= 86400 - segurar then return falta - (86400 - segurar) end
+  return nil
+end
+
+local sair = false
+local horarioEscolhido = nil
+local melhorDistancia = nil
+local horariosLidos = 0
+
+if estado and type(estado.entries) == "table"
+    and not (RESPEITAR_EVENTOS_OFF and estado.enabled ~= true) then
+  for _, entrada in ipairs(estado.entries) do
+    if type(entrada) == "table" then
+      local tipo = tostring(entrada.tipo or "evento"):lower()
+      local usar = (tipo == "clickup" and USAR_CLICKUP) or (tipo ~= "clickup" and USAR_EVENTOS)
+      if usar then
+        local hh, mm = tostring(entrada.start or ""):match("^(%d%d?):(%d%d)$")
+        hh, mm = tonumber(hh), tonumber(mm)
+        if hh and mm and hh <= 23 and mm <= 59 then
+          horariosLidos = horariosLidos + 1
+          local alvo = hh * 3600 + mm * 60
+          local falta
+          if alvo >= segundoAtual then
+            falta = alvo - segundoAtual
+          else
+            falta = alvo + 86400 - segundoAtual
+          end
+          local distancia = distanciaDaJanela(falta)
+          if distancia and (not melhorDistancia or distancia < melhorDistancia) then
+            melhorDistancia = distancia
+            horarioEscolhido = string.format("%02d:%02d", hh, mm)
+            sair = true
+          end
+        end
+      end
+    end
+  end
+end
+
+if sair then
+  CaveBot.gotoLabel(labelSaida)
+  if memoria.ultimoLog ~= "sair|" .. tostring(horarioEscolhido) then
+    memoria.ultimoLog = "sair|" .. tostring(horarioEscolhido)
+    print("[WAYPOINT] Horario " .. tostring(horarioEscolhido) ..
+          " do fullup: saindo " .. tostring(ANTECEDENCIA_MIN) .. " min antes -> '" .. labelSaida .. "'.")
+  end
+else
+  CaveBot.gotoLabel(LABEL_HUNT)
+  if memoria.ultimoLog ~= "hunt" then
+    memoria.ultimoLog = "hunt"
+    if horariosLidos == 0 then
+      print("[WAYPOINT] Nenhum horario lido do fullup; seguindo na '" .. LABEL_HUNT .. "'.")
+    else
+      print("[WAYPOINT] Fora da janela de saida (" .. tostring(horariosLidos) ..
+            " horarios lidos); seguindo na '" .. LABEL_HUNT .. "'.")
+    end
+  end
+end
+
+return true
+</script>
 
 <script>
 (function(){
@@ -165,152 +520,156 @@
 
   var ARQUIVO = "function.txt";
 
-  var caixa    = document.getElementById("caixa");
+  var code     = document.getElementById("code");
   var copiar   = document.getElementById("copiar");
   var rotulo   = document.getElementById("rotuloCopiar");
+  var copiarHero   = document.getElementById("copiarHero");
+  var rotuloHero   = document.getElementById("rotuloHero");
   var atualizar= document.getElementById("atualizar");
   var status   = document.getElementById("status");
   var info     = document.getElementById("info");
-  var nomeArq  = document.getElementById("nomeArquivo");
   var quebra   = document.getElementById("quebra");
+  var mLinhas  = document.getElementById("mLinhas");
+  var mBytes   = document.getElementById("mBytes");
+  var btnDownload = document.getElementById("btnDownload");
 
   var conteudo = "";
-  var timerBotao = null;
+  var timerBtn = null, timerHero = null;
 
-  nomeArq.textContent = ARQUIVO;
-
-  function marcarStatus(texto, classe){
+  function setStatus(texto, classe){
     status.textContent = texto || "";
-    status.className = classe || "";
+    status.className = "t-status" + (classe ? " " + classe : "");
   }
 
-  function mostrarAviso(texto){
-    conteudo = "";
-    caixa.textContent = texto;
-    caixa.className = "aviso";
-    copiar.disabled = true;
-    info.textContent = "";
+  /* ---------- syntax highlight (Lua) ---------- */
+  var RE = /(--[^\n]*)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|\b(local|function|end|if|then|elseif|else|return|for|while|do|in|not|and|or|nil|true|false|until|repeat|break|goto)\b|\b(\d+(?:\.\d+)?)\b|\b(CaveBot|storage|os|string|math|table|io|type|tostring|tonumber|pairs|ipairs|next|select|unpack|rawget|rawset|setmetatable|getmetatable|require|print|os\.time|os\.date)\b/g;
+
+  function esc(s){
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function highlight(src){
+    var out = "", last = 0, m;
+    RE.lastIndex = 0;
+    while ((m = RE.exec(src)) !== null) {
+      out += esc(src.slice(last, m.index));
+      if (m[1] !== undefined)      out += '<span class="tk-c">' + esc(m[1]) + '</span>';
+      else if (m[2] !== undefined) out += '<span class="tk-s">' + esc(m[2]) + '</span>';
+      else if (m[3] !== undefined) out += '<span class="tk-k">' + esc(m[3]) + '</span>';
+      else if (m[4] !== undefined) out += '<span class="tk-n">' + esc(m[4]) + '</span>';
+      else if (m[5] !== undefined) out += '<span class="tk-b">' + esc(m[5]) + '</span>';
+      last = m.index + m[0].length;
+    }
+    out += esc(src.slice(last));
+    return out;
   }
 
-  function aplicarQuebra(){
-    if (quebra.checked) { caixa.classList.add("quebra"); }
-    else { caixa.classList.remove("quebra"); }
+  function render(texto){
+    var linhas = texto.split("\n");
+    var html = "";
+    for (var i = 0; i < linhas.length; i++) {
+      html += '<div class="cl"><span class="n">' + (i + 1) + '</span><span class="c">' +
+              highlight(linhas[i]) + "</span></div>";
+    }
+    code.innerHTML = html;
   }
 
-  function pintar(texto){
+  function pintar(texto, origem){
     conteudo = texto;
-    caixa.className = "";
-    caixa.textContent = texto;
+    code.className = "code";
+    render(texto);
     aplicarQuebra();
-    copiar.disabled = false;
-
-    var linhas = texto.split("\n").length;
-    info.textContent = linhas + " linhas / " + texto.length + " caracteres";
-  }
-
-  function carregar(){
-    marcarStatus("carregando...", "");
-    atualizar.disabled = true;
-    copiar.disabled = true;
-
-    var url = ARQUIVO + "?v=" + Date.now();
-    var req = new XMLHttpRequest();
-    req.open("GET", url, true);
-    req.onreadystatechange = function(){
-      if (req.readyState !== 4) { return; }
-      atualizar.disabled = false;
-      if (req.status >= 200 && req.status < 300 && req.responseText && req.responseText.length > 0) {
-        pintar(req.responseText.replace(/\r\n/g, "\n"));
-        var agora = new Date();
-        marcarStatus("carregado as " +
-          String(agora.getHours()).padStart(2,"0") + ":" +
-          String(agora.getMinutes()).padStart(2,"0") + ":" +
-          String(agora.getSeconds()).padStart(2,"0"), "ok");
-        return;
-      }
-      falhou(req.status === 0 ? "sem acesso ao arquivo" : ("HTTP " + req.status));
-    };
-    req.onerror = function(){ atualizar.disabled = false; falhou("sem acesso ao arquivo"); };
-    try { req.send(); } catch (e) { atualizar.disabled = false; falhou(String(e)); }
+    info.textContent = texto.split("\n").length + " linhas · " + texto.length.toLocaleString("pt-BR") + " chars";
+    mLinhas.textContent = texto.split("\n").length;
+    mBytes.textContent = (new Blob([texto]).size / 1024).toFixed(1) + " KB";
+    var agora = new Date();
+    var hh = String(agora.getHours()).padStart(2,"0"), mm = String(agora.getMinutes()).padStart(2,"0"), ss = String(agora.getSeconds()).padStart(2,"0");
+    setStatus((origem === "fallback" ? "embutido · " : "carregado às ") + hh + ":" + mm + ":" + ss, "ok");
   }
 
   function falhou(motivo){
-    marcarStatus("falhou: " + motivo, "erro");
-    mostrarAviso(
-      "Nao consegui ler o " + ARQUIVO + ".\n\n" +
-      "Motivos mais comuns:\n" +
-      "1. Voce abriu o arquivo direto do PC (file://) - o navegador bloqueia leitura de arquivo assim. " +
-      "Hospede o site (GitHub Pages, Netlify, Vercel) ou rode um servidor local: python -m http.server\n" +
-      "2. O arquivo precisa estar NA MESMA PASTA do index.html e com o nome exato " + ARQUIVO + ".\n" +
-      "3. Na pre-visualizacao do chat a leitura de arquivos e bloqueada por seguranca - hospedado funciona normal.\n\n" +
-      "Depois de resolver, clique em ATUALIZAR."
-    );
-  }
-
-  function copiarTexto(texto){
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(texto).then(function(){ deuCerto(); }, function(){ copiaAntiga(texto); });
+    setStatus("falhou: " + motivo, "erro");
+    var fb = document.getElementById("fallback-src").textContent;
+    if (fb && fb.indexOf("__FUNCTION_FALLBACK__") === -1 && fb.trim().length > 10) {
+      pintar(fb.replace(/\r\n/g,"\n").replace(/^\n+|\n+$/g,"") + "\n", "fallback");
+      setStatus("offline · usando cópia embutida", "erro");
       return;
     }
-    copiaAntiga(texto);
+    conteudo = "";
+    code.className = "code";
+    code.innerHTML = '<div class="cl"><span class="n">!</span><span class="c">Não consegui ler o ' + ARQUIVO + '.\n\nHospede o site (GitHub Pages) ou rode um servidor local: python -m http.server\nDepois clique em ATUALIZAR.</span></div>';
   }
 
-  function copiaAntiga(texto){
-    var area = document.createElement("textarea");
-    area.value = texto;
-    area.setAttribute("readonly", "");
-    area.style.position = "fixed";
-    area.style.top = "-2000px";
-    area.style.opacity = "0";
-    document.body.appendChild(area);
-    area.select();
-    area.setSelectionRange(0, texto.length);
+  function carregar(){
+    setStatus("carregando…", "");
+    atualizar.disabled = true;
+    var url = ARQUIVO + "?v=" + Date.now();
+    fetch(url, { cache: "no-store" })
+      .then(function(r){
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.text();
+      })
+      .then(function(t){
+        atualizar.disabled = false;
+        if (t && t.trim().length > 0) { pintar(t.replace(/\r\n/g,"\n"), "fetch"); }
+        else { falhou("arquivo vazio"); }
+      })
+      .catch(function(e){ atualizar.disabled = false; falhou(String(e.message || e)); });
+  }
 
-    var ok = false;
-    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
-    document.body.removeChild(area);
+  function aplicarQuebra(){
+    code.classList.toggle("quebra", quebra.checked);
+  }
 
-    if (ok) { deuCerto(); }
-    else {
-      marcarStatus("copie na mao: clique na caixa e use Ctrl+C", "erro");
-      var faixa = document.createRange();
-      faixa.selectNodeContents(caixa);
-      var sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(faixa);
+  function copiarTexto(texto, done){
+    function fallbackCopy(){
+      var area = document.createElement("textarea");
+      area.value = texto;
+      area.setAttribute("readonly","");
+      area.style.cssText = "position:fixed;top:-2000px;opacity:0";
+      document.body.appendChild(area);
+      area.select(); area.setSelectionRange(0, texto.length);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      document.body.removeChild(area);
+      done(ok);
     }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(function(){ done(true); }, fallbackCopy);
+    } else fallbackCopy();
   }
 
-  function deuCerto(){
-    marcarStatus("codigo copiado", "ok");
-    rotulo.textContent = "COPIADO";
-    copiar.classList.add("ok");
-    if (timerBotao) { clearTimeout(timerBotao); }
-    timerBotao = setTimeout(function(){
-      rotulo.textContent = "COPIAR";
-      copiar.classList.remove("ok");
-    }, 1800);
+  function flashCopiar(){
+    copiar.classList.add("ok"); rotulo.textContent = "COPIADO ✓";
+    rotuloHero.textContent = "COPIADO ✓"; copiarHero.classList.add("ok");
+    setStatus("código copiado", "ok");
+    if (timerBtn) clearTimeout(timerBtn);
+    timerBtn = setTimeout(function(){ rotulo.textContent = "COPIAR"; copiar.classList.remove("ok"); }, 1800);
+    if (timerHero) clearTimeout(timerHero);
+    timerHero = setTimeout(function(){ rotuloHero.textContent = "COPIAR FUNÇÃO"; copiarHero.classList.remove("ok"); }, 1800);
   }
 
-  copiar.addEventListener("click", function(){
-    if (!conteudo) { return; }
-    copiarTexto(conteudo);
-  });
+  function doCopy(){
+    if (!conteudo) { setStatus("nada para copiar", "erro"); return; }
+    copiarTexto(conteudo, function(ok){
+      if (ok) flashCopiar();
+      else setStatus("copie na mão: clique no código e Ctrl+C", "erro");
+    });
+  }
 
+  copiar.addEventListener("click", doCopy);
+  copiarHero.addEventListener("click", doCopy);
   atualizar.addEventListener("click", carregar);
-
+  btnDownload.addEventListener("click", function(){
+    var blob = new Blob([conteudo || document.getElementById("fallback-src").textContent], { type: "text/plain;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "function.txt";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  });
   quebra.addEventListener("change", function(){
     aplicarQuebra();
     try { localStorage.setItem("quebraLinha", quebra.checked ? "1" : "0"); } catch (e) {}
-  });
-
-  caixa.addEventListener("click", function(){
-    if (!conteudo) { return; }
-    var faixa = document.createRange();
-    faixa.selectNodeContents(caixa);
-    var sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(faixa);
   });
 
   try { quebra.checked = localStorage.getItem("quebraLinha") === "1"; } catch (e) {}

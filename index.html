@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Function do CaveBot - FullUp</title>
+<style>
+  :root{
+    --bg:#0d1014;
+    --card:#151a21;
+    --card2:#0a0d11;
+    --linha:#242c36;
+    --texto:#e6edf3;
+    --fraco:#8b98a5;
+    --verde:#3ddc84;
+    --azul:#22d3ee;
+    --vermelho:#ff5555;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%, #16202b 0%, var(--bg) 60%);
+    color:var(--texto);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    min-height:100vh;
+    padding:18px 14px 40px;
+  }
+  .wrap{max-width:900px;margin:0 auto}
+  header{margin-bottom:14px}
+  h1{
+    font-size:19px;margin:0 0 4px;letter-spacing:.2px;
+    display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  }
+  h1 .tag{
+    font-size:10px;font-weight:700;letter-spacing:1px;
+    color:#08130c;background:var(--verde);
+    padding:3px 7px;border-radius:999px;
+  }
+  .sub{color:var(--fraco);font-size:13px;margin:0;line-height:1.5}
+  .sub code{color:var(--azul);background:#0a0d11;padding:1px 5px;border-radius:4px;font-size:12px}
+
+  .barra{
+    display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+    margin:16px 0 10px;
+  }
+  button{
+    font-family:inherit;font-size:13px;font-weight:700;letter-spacing:.4px;
+    border:1px solid transparent;border-radius:9px;padding:11px 18px;
+    cursor:pointer;transition:transform .06s ease, filter .15s ease, background .15s ease;
+    display:inline-flex;align-items:center;gap:8px;
+  }
+  button:active{transform:translateY(1px)}
+  #copiar{background:var(--verde);color:#06210f;min-width:150px;justify-content:center}
+  #copiar:hover{filter:brightness(1.08)}
+  #copiar.ok{background:#1f9e5c;color:#eafff3}
+  #copiar:disabled{background:#2a3340;color:#6f7d8b;cursor:not-allowed}
+  .ghost{
+    background:transparent;color:var(--texto);border-color:var(--linha);
+  }
+  .ghost:hover{background:#1b232c}
+  .ghost:disabled{color:#5c6773;cursor:not-allowed}
+  .espaco{flex:1}
+
+  .mini{
+    display:flex;align-items:center;gap:8px;color:var(--fraco);
+    font-size:12px;user-select:none;cursor:pointer;
+  }
+  .mini input{accent-color:var(--verde);width:15px;height:15px;cursor:pointer}
+
+  #status{font-size:12px;color:var(--fraco);min-height:16px}
+  #status.erro{color:var(--vermelho)}
+  #status.ok{color:var(--verde)}
+
+  .caixa{
+    background:var(--card2);
+    border:1px solid var(--linha);
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  .caixa .topo{
+    display:flex;align-items:center;gap:8px;
+    padding:9px 12px;background:var(--card);
+    border-bottom:1px solid var(--linha);
+    font-size:11.5px;color:var(--fraco);letter-spacing:.3px;
+  }
+  .bolinha{width:9px;height:9px;border-radius:50%;background:#ff5f56}
+  .bolinha:nth-child(2){background:#ffbd2e}
+  .bolinha:nth-child(3){background:#27c93f}
+  .arquivo{color:var(--azul);font-family:ui-monospace,Consolas,Menlo,monospace}
+  #caixa{
+    margin:0;padding:14px 15px;
+    font-family:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;
+    font-size:12.5px;line-height:1.55;
+    color:#cfe3f5;
+    white-space:pre;
+    overflow:auto;
+    max-height:62vh;
+    tab-size:2;
+    outline:none;
+  }
+  #caixa.quebra{white-space:pre-wrap;word-break:break-word}
+  #caixa::selection,#caixa *::selection{background:#25476b;color:#fff}
+  #caixa.aviso{
+    color:var(--fraco);white-space:pre-wrap;
+    font-family:system-ui,sans-serif;font-size:13.5px;line-height:1.65;
+  }
+  footer{
+    margin-top:14px;font-size:12px;color:#6f7d8b;line-height:1.6;
+  }
+  footer b{color:var(--fraco)}
+  @media (max-width:560px){
+    .barra{gap:8px}
+    #copiar{flex:1;min-width:0}
+    .ghost{padding:11px 13px}
+    #caixa{font-size:11.5px;max-height:56vh}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Function do CaveBot <span class="tag">FULLUP</span></h1>
+    <p class="sub">
+      Sai <b>3 minutos antes</b> dos horários cadastrados no fullup.
+      Lê direto de <code>function.txt</code> — edite o arquivo e clique em ATUALIZAR.
+    </p>
+  </header>
+
+  <div class="barra">
+    <button id="copiar" disabled>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+      <span id="rotuloCopiar">COPIAR</span>
+    </button>
+    <button id="atualizar" class="ghost">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+      ATUALIZAR
+    </button>
+    <label class="mini"><input type="checkbox" id="quebra"> quebrar linha</label>
+    <span class="espaco"></span>
+    <span id="status"></span>
+  </div>
+
+  <div class="caixa">
+    <div class="topo">
+      <span class="bolinha"></span><span class="bolinha"></span><span class="bolinha"></span>
+      <span class="arquivo" id="nomeArquivo">function.txt</span>
+      <span id="info" style="margin-left:auto"></span>
+    </div>
+    <pre id="caixa" class="aviso" tabindex="0">Carregando function.txt...</pre>
+  </div>
+
+  <footer>
+    <b>Como usar:</b> clique em COPIAR, abra o editor de waypoints do CaveBot, apague a função velha e cole.<br>
+    Para editar depois, mexa só no <b>function.txt</b> — o HTML não precisa ser tocado.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var ARQUIVO = "function.txt";
+
+  var caixa    = document.getElementById("caixa");
+  var copiar   = document.getElementById("copiar");
+  var rotulo   = document.getElementById("rotuloCopiar");
+  var atualizar= document.getElementById("atualizar");
+  var status   = document.getElementById("status");
+  var info     = document.getElementById("info");
+  var nomeArq  = document.getElementById("nomeArquivo");
+  var quebra   = document.getElementById("quebra");
+
+  var conteudo = "";
+  var timerBotao = null;
+
+  nomeArq.textContent = ARQUIVO;
+
+  function marcarStatus(texto, classe){
+    status.textContent = texto || "";
+    status.className = classe || "";
+  }
+
+  function mostrarAviso(texto){
+    conteudo = "";
+    caixa.textContent = texto;
+    caixa.className = "aviso";
+    copiar.disabled = true;
+    info.textContent = "";
+  }
+
+  function aplicarQuebra(){
+    if (quebra.checked) { caixa.classList.add("quebra"); }
+    else { caixa.classList.remove("quebra"); }
+  }
+
+  function pintar(texto){
+    conteudo = texto;
+    caixa.className = "";
+    caixa.textContent = texto;
+    aplicarQuebra();
+    copiar.disabled = false;
+
+    var linhas = texto.split("\n").length;
+    info.textContent = linhas + " linhas / " + texto.length + " caracteres";
+  }
+
+  function carregar(){
+    marcarStatus("carregando...", "");
+    atualizar.disabled = true;
+    copiar.disabled = true;
+
+    var url = ARQUIVO + "?v=" + Date.now();
+    var req = new XMLHttpRequest();
+    req.open("GET", url, true);
+    req.onreadystatechange = function(){
+      if (req.readyState !== 4) { return; }
+      atualizar.disabled = false;
+      if (req.status >= 200 && req.status < 300 && req.responseText && req.responseText.length > 0) {
+        pintar(req.responseText.replace(/\r\n/g, "\n"));
+        var agora = new Date();
+        marcarStatus("carregado as " +
+          String(agora.getHours()).padStart(2,"0") + ":" +
+          String(agora.getMinutes()).padStart(2,"0") + ":" +
+          String(agora.getSeconds()).padStart(2,"0"), "ok");
+        return;
+      }
+      falhou(req.status === 0 ? "sem acesso ao arquivo" : ("HTTP " + req.status));
+    };
+    req.onerror = function(){ atualizar.disabled = false; falhou("sem acesso ao arquivo"); };
+    try { req.send(); } catch (e) { atualizar.disabled = false; falhou(String(e)); }
+  }
+
+  function falhou(motivo){
+    marcarStatus("falhou: " + motivo, "erro");
+    mostrarAviso(
+      "Nao consegui ler o " + ARQUIVO + ".\n\n" +
+      "Motivos mais comuns:\n" +
+      "1. Voce abriu o arquivo direto do PC (file://) - o navegador bloqueia leitura de arquivo assim. " +
+      "Hospede o site (GitHub Pages, Netlify, Vercel) ou rode um servidor local: python -m http.server\n" +
+      "2. O arquivo precisa estar NA MESMA PASTA do index.html e com o nome exato " + ARQUIVO + ".\n" +
+      "3. Na pre-visualizacao do chat a leitura de arquivos e bloqueada por seguranca - hospedado funciona normal.\n\n" +
+      "Depois de resolver, clique em ATUALIZAR."
+    );
+  }
+
+  function copiarTexto(texto){
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(function(){ deuCerto(); }, function(){ copiaAntiga(texto); });
+      return;
+    }
+    copiaAntiga(texto);
+  }
+
+  function copiaAntiga(texto){
+    var area = document.createElement("textarea");
+    area.value = texto;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.top = "-2000px";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+    area.setSelectionRange(0, texto.length);
+
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    document.body.removeChild(area);
+
+    if (ok) { deuCerto(); }
+    else {
+      marcarStatus("copie na mao: clique na caixa e use Ctrl+C", "erro");
+      var faixa = document.createRange();
+      faixa.selectNodeContents(caixa);
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(faixa);
+    }
+  }
+
+  function deuCerto(){
+    marcarStatus("codigo copiado", "ok");
+    rotulo.textContent = "COPIADO";
+    copiar.classList.add("ok");
+    if (timerBotao) { clearTimeout(timerBotao); }
+    timerBotao = setTimeout(function(){
+      rotulo.textContent = "COPIAR";
+      copiar.classList.remove("ok");
+    }, 1800);
+  }
+
+  copiar.addEventListener("click", function(){
+    if (!conteudo) { return; }
+    copiarTexto(conteudo);
+  });
+
+  atualizar.addEventListener("click", carregar);
+
+  quebra.addEventListener("change", function(){
+    aplicarQuebra();
+    try { localStorage.setItem("quebraLinha", quebra.checked ? "1" : "0"); } catch (e) {}
+  });
+
+  caixa.addEventListener("click", function(){
+    if (!conteudo) { return; }
+    var faixa = document.createRange();
+    faixa.selectNodeContents(caixa);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(faixa);
+  });
+
+  try { quebra.checked = localStorage.getItem("quebraLinha") === "1"; } catch (e) {}
+
+  carregar();
+})();
+</script>
+</body>
+</html>
